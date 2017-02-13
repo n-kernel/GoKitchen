@@ -30,7 +30,6 @@ func (c cook) Start() {
 	for {
 		select {
 		case <-c.stopSignal:
-			return
 		default:
 			c.assembleBurger()
 		}
