@@ -5,6 +5,7 @@ import (
     "time"
 )
 
+// Holds buffers of ingredients
 type Storage struct {
     bread chan bool
     cheese chan bool
@@ -14,30 +15,42 @@ type Storage struct {
     burger chan bool
 }
 
+// Initializes the storage we will use
 var storage = Storage {
-    make(chan bool),
-    make(chan bool),
-    make(chan bool),
-    make(chan bool),
+    make(chan bool, 10),
+    make(chan bool, 10),
+    make(chan bool, 10),
+    make(chan bool, 10),
 
-    make(chan bool),
+    make(chan bool, 10),
 }
 
 func main() {
     fmt.Println("Hello restaurant!")
 
-    // Start assembling of burger
-    go assembleBurger()
+    // Hires a cook to make burgers
+    go hireCook()
 
     // Pass burger ingredients to storage
-    storage.bread <- true
-    storage.cheese <- true
-    storage.tomato <- true
-    storage.lettuce <- true
+    supply(storage.bread, 4)
+    supply(storage.cheese, 4)
+    supply(storage.tomato, 4)
+    supply(storage.lettuce, 4)
 
-    // Wait for burger to be created
-    <-storage.burger
+    // Wait for burgers to be created
+    for i := 0; i < 4; i++ {
+        fmt.Println("Making burger ", i)
+        <-storage.burger
+    }
+
     fmt.Println("Nom nom nom!")
+}
+
+// A cook which makes burgers infinitely
+func hireCook() {
+    for {
+        assembleBurger()
+    }
 }
 
 func assembleBurger() {
@@ -54,4 +67,10 @@ func assembleBurger() {
 
     storage.burger <- true
     fmt.Println("Created a burger!")
+}
+
+func supply(ingredient chan bool, amount int) {
+    for i := 0; i < amount; i++ {
+        ingredient <- true
+    }
 }
