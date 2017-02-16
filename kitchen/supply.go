@@ -1,26 +1,32 @@
 package kitchen
 
-import "time"
+import (
+	"time"
+)
 
 type Supply struct {
-	storage Storage
+	Node
+
+	storage *Storage
 	item    Item
 	Delay   time.Duration
 
 	stopSignal chan bool
 }
 
-func NewSupply(storage Storage, item Item, delay time.Duration) Supply {
-	return Supply{storage, item, delay, make(chan bool)}
+func NewSupply(name string, storage *Storage, item Item, delay time.Duration) *Supply {
+	return &Supply{Node{NodeTypeSupply, name}, storage, item, delay, make(chan bool), }
 }
 
-func (s Supply) Start() {
+func (s *Supply) Start() {
 	for {
+		s.updateStatus(Working)
 		time.Sleep(s.Delay)
 		select {
 		case <-s.stopSignal:
 			return
 		default:
+			s.updateStatus(Finished)
 			s.storage.Get(s.item) <- true
 		}
 	}
