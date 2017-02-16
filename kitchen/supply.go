@@ -2,19 +2,19 @@ package kitchen
 
 import "time"
 
-type supply struct {
-	storage storage
-	item    item
+type Supply struct {
+	storage Storage
+	item    Item
 	Delay   time.Duration
 
 	stopSignal chan bool
 }
 
-func NewSupply(storage storage, item item, delay time.Duration) supply {
-	return supply{storage, item, delay, make(chan bool)}
+func NewSupply(storage Storage, item Item, delay time.Duration) Supply {
+	return Supply{storage, item, delay, make(chan bool)}
 }
 
-func (s supply) Start() {
+func (s Supply) Start() {
 	for {
 		time.Sleep(s.Delay)
 		select {
@@ -26,6 +26,10 @@ func (s supply) Start() {
 	}
 }
 
-func (s supply) Stop() {
+func (s Supply) Stop() {
 	s.stopSignal <- true
+}
+
+func (s Supply) Item() Item {
+	return s.item
 }

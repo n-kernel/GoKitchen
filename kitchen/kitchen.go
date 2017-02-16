@@ -1,8 +1,8 @@
 package kitchen
 
-type item int
+type Item int
 const (
-	Bread item = iota
+	Bread   Item = iota
 	Cheese
 	Tomato
 	Lettuce
@@ -10,7 +10,7 @@ const (
 	Burger
 )
 
-var Items = []item{
+var Items = []Item{
 	Bread,
 	Cheese,
 	Tomato,

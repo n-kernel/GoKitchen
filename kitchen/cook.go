@@ -6,19 +6,19 @@ import (
 	"github.com/Jeroenimoo/GoKitchen/util"
 )
 
-type cook struct {
-	storage     storage
+type Cook struct {
+	storage     Storage
 	bakeTime    time.Duration
 	BurgerCount int
 
 	stopSignal chan bool
 }
 
-func NewCook(storage storage, bakeTime time.Duration) cook {
-	return cook{storage,bakeTime, 0, make(chan bool, 1)}
+func NewCook(storage Storage, bakeTime time.Duration) Cook {
+	return Cook{storage, bakeTime, 0, make(chan bool, 1)}
 }
 
-func (c cook) Start() {
+func (c Cook) Start() {
 	for {
 		select {
 		case <-c.stopSignal:
@@ -28,11 +28,11 @@ func (c cook) Start() {
 	}
 }
 
-func (c cook) Stop() {
+func (c Cook) Stop() {
 	c.stopSignal <- true
 }
 
-func (c cook) assembleBurger() {
+func (c Cook) assembleBurger() {
 	fmt.Println("Started making a burger!")
 
 	// Wait for burger items to be available

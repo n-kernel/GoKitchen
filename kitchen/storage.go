@@ -1,15 +1,15 @@
 package kitchen
 
 // Holds buffers of ingredients
-type storage struct {
-	Ingredients map[item] chan bool
+type Storage struct {
+	Ingredients map[Item] chan bool
 
 	Burger chan bool
 }
 
-func NewStorage() storage {
-	s := storage{}
-	s.Ingredients = make(map[item] chan bool)
+func NewStorage() Storage {
+	s := Storage{}
+	s.Ingredients = make(map[Item] chan bool)
 
 	for _, item := range Items {
 		s.Ingredients[item] = make(chan bool, 100)
@@ -20,6 +20,6 @@ func NewStorage() storage {
 	return s
 }
 
-func (s storage) Get(item item) chan bool {
+func (s Storage) Get(item Item) chan bool {
 	return s.Ingredients[item]
 }
