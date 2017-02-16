@@ -2,8 +2,8 @@ package main
 
 import (
     "fmt"
-    "./kitchen"
     "time"
+    "github.com/Jeroenimoo/GoKitchen/kitchen"
 )
 
 // Initializes the storage we will use
