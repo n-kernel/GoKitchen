@@ -3,6 +3,7 @@ package kitchen
 import (
 	"time"
 	"fmt"
+	"github.com/Jeroenimoo/GoKitchen/util"
 )
 
 // Holds buffers of ingredients
@@ -45,6 +46,11 @@ func (c cook) assembleBurger() {
 	fmt.Println("Started making a burger!")
 
 	// Wait for burger items to be available
+	select {
+	case <-util.Merge(c.storage.Bread, c.storage.Cheese, c.storage.Tomato, c.storage.Lettuce):
+	case <-c.stopSignal:
+		return
+	}
 	<-c.storage.Bread
 	<-c.storage.Cheese
 	<-c.storage.Tomato
