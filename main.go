@@ -23,11 +23,16 @@ func main() {
     cook1 := kitchen.NewCook(storage, time.Second)
     go cook1.Start()
 
-    // Pass burger ingredients to storage
-    supply(storage.Bread, 4)
-    supply(storage.Cheese, 4)
-    supply(storage.Tomato, 4)
-    supply(storage.Lettuce, 4)
+    // Create suppliers
+    supplierBread := kitchen.NewSupply(storage.Bread, time.Second)
+    supplierCheese := kitchen.NewSupply(storage.Cheese, time.Second)
+    supplierTomato := kitchen.NewSupply(storage.Tomato, time.Second)
+    supplierLettuce := kitchen.NewSupply(storage.Lettuce, time.Second)
+
+    go supplierBread.Start()
+    go supplierCheese.Start()
+    go supplierTomato.Start()
+    go supplierLettuce.Start()
 
     // Wait for burgers to be created
     for i := 0; i < 4; i++ {
@@ -35,11 +40,12 @@ func main() {
         <-storage.Burger
     }
 
-    fmt.Println("Nom nom nom!")
-}
+    supplierBread.Stop()
+    supplierCheese.Stop()
+    supplierTomato.Stop()
+    supplierLettuce.Stop()
 
-func supply(ingredient chan bool, amount int) {
-    for i := 0; i < amount; i++ {
-        ingredient <- true
-    }
+    cook1.Stop()
+
+    fmt.Println("Nom nom nom!")
 }

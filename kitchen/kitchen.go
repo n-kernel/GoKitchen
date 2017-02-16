@@ -19,6 +19,7 @@ type cook struct {
 	storage Storage
 	bakeTime time.Duration
 	BurgerCount int
+
 	stopSignal chan bool
 }
 
@@ -54,4 +55,31 @@ func (c cook) assembleBurger() {
 
 	c.storage.Burger <- true
 	fmt.Println("Created a burger!")
+}
+
+type supply struct {
+	ToSupply chan bool
+	Delay time.Duration
+
+	stopSignal chan bool
+}
+
+func NewSupply(toSupply chan bool, delay time.Duration) supply {
+	return supply{toSupply, delay, make(chan bool)}
+}
+
+func (s supply) Start() {
+	for {
+		time.Sleep(s.Delay);
+		select {
+		case <-s.stopSignal:
+			return
+		default:
+			s.ToSupply <- true
+		}
+	}
+}
+
+func (s supply) Stop() {
+	s.stopSignal <- true
 }
