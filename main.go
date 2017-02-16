@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"time"
 	"github.com/Jeroenimoo/GoKitchen/util"
+	"github.com/julienschmidt/httprouter"
 )
 
 // Initializes the storage we will use
@@ -14,23 +15,15 @@ var suppliers = make(map[string]kitchen.Supply)
 var storage = kitchen.NewStorage()
 var cooks = make(map[string]kitchen.Cook)
 
-type WebAdd struct {
-	Row string `json:"row"`
-}
-
-type WebDel struct {
-	Row  string `json:"row"`
-	Node string `json:"node"`
-}
-
 func main() {
 	fmt.Println("Hello restaurant!")
 
-	http.HandleFunc("/layout", webLayout)
-	http.HandleFunc("/layout/add", webAdd)
-	http.HandleFunc("/layout/del", webDel)
+	router := httprouter.New()
+	router.GET("/layout", webLayout)
+	router.POST("/layout/:row", webAdd)
+	router.DELETE("/layout/:row/:node", webDel)
 
-	go http.ListenAndServe(":8080", nil)
+	go http.ListenAndServe(":8080", router)
 
 	// Create suppliers
 	suppliers["bread"] = kitchen.NewSupply(storage, kitchen.Bread, time.Second)
@@ -71,7 +64,7 @@ func main() {
 	fmt.Println("Nom nom nom!")
 }
 
-func webLayout(w http.ResponseWriter, _ *http.Request) {
+func webLayout(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	itemIds := make([]string, len(suppliers))
 
 	var counter int
@@ -100,46 +93,39 @@ func webLayout(w http.ResponseWriter, _ *http.Request) {
 	json.NewEncoder(w).Encode(f)
 }
 
-func webAdd(w http.ResponseWriter, r *http.Request) {
-	var data WebAdd
-	if r.Body == nil {
-		http.Error(w, "Please send a request body", 400)
-		return
-	}
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
+func webAdd(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+	row := ps.ByName("row")
 
-	switch data.Row {
+	switch row {
 	case "supply":
 		suppliers[util.RandStringBytesMaskImprSrc(4)] = kitchen.NewSupply(storage, kitchen.Bread, time.Second)
 	case "cooks":
 		cooks[util.RandStringBytesMaskImprSrc(4)] = kitchen.NewCook(storage, time.Second)
 	default:
-		http.Error(w, "Unkown row "+data.Row, 400)
+		http.Error(w, "Unkown row "+row, 404)
 	}
 }
 
-func webDel(w http.ResponseWriter, r *http.Request) {
-	var data WebDel
-	if r.Body == nil {
-		http.Error(w, "Please send a request body", 400)
-		return
-	}
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
+func webDel(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
+	row := ps.ByName("row")
+	node := ps.ByName("node")
 
-	switch data.Row {
+	switch row {
 	case "supply":
-		delete(suppliers, data.Node)
+		if _, ok := suppliers[node]; !ok {
+			http.Error(w, "Unkown node "+node, 404)
+			return
+		}
+
+		delete(suppliers, node)
 	case "cooks":
-		delete(cooks, data.Node)
+		if _, ok := suppliers[node]; !ok {
+			http.Error(w, "Unkown node "+node, 404)
+			return
+		}
+
+		delete(cooks, node)
 	default:
-		http.Error(w, "Unkown row "+data.Row, 400)
+		http.Error(w, "Unkown row "+row, 404)
 	}
 }
