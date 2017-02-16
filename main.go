@@ -7,14 +7,7 @@ import (
 )
 
 // Initializes the storage we will use
-var storage = kitchen.Storage {
-    make(chan bool, 10),
-    make(chan bool, 10),
-    make(chan bool, 10),
-    make(chan bool, 10),
-
-    make(chan bool, 10),
-}
+var storage = kitchen.NewStorage()
 
 func main() {
     fmt.Println("Hello restaurant!")
@@ -24,10 +17,10 @@ func main() {
     go cook1.Start()
 
     // Create suppliers
-    supplierBread := kitchen.NewSupply(storage.Bread, time.Second)
-    supplierCheese := kitchen.NewSupply(storage.Cheese, time.Second)
-    supplierTomato := kitchen.NewSupply(storage.Tomato, time.Second)
-    supplierLettuce := kitchen.NewSupply(storage.Lettuce, time.Second)
+    supplierBread := kitchen.NewSupply(storage, kitchen.Bread, time.Second)
+    supplierCheese := kitchen.NewSupply(storage, kitchen.Cheese, time.Second)
+    supplierTomato := kitchen.NewSupply(storage, kitchen.Tomato, time.Second)
+    supplierLettuce := kitchen.NewSupply(storage, kitchen.Lettuce, time.Second)
 
     go supplierBread.Start()
     go supplierCheese.Start()
