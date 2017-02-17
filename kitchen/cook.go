@@ -3,6 +3,7 @@ package kitchen
 import (
 	"time"
 	"github.com/Jeroenimoo/GoKitchen/util"
+	"fmt"
 )
 
 type Cook struct {
@@ -37,7 +38,7 @@ func (c *Cook) assembleBurger() {
 	c.updateStatus(Waiting)
 	// Wait for burger items to be available
 	select {
-	case <-util.Merge(c.storage.Get(Bread), c.storage.Get(Cheese), c.storage.Get(Tomato), c.storage.Get(Lettuce)):
+	case <-util.Merge(c.storage.GetIngredient(Bread), c.storage.GetIngredient(Cheese), c.storage.GetIngredient(Tomato), c.storage.GetIngredient(Lettuce)):
 	case <-c.stopSignal:
 		return
 	}
@@ -48,5 +49,6 @@ func (c *Cook) assembleBurger() {
 	time.Sleep(time.Second)
 
 	c.updateStatus(Finished)
-	c.storage.Burger <- true
+	c.storage.GetMeal(Burger) <- true
+	fmt.Println(c.Name, " created a burger!")
 }

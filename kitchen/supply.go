@@ -27,7 +27,7 @@ func (s *Supply) Start() {
 			return
 		default:
 			s.updateStatus(Finished)
-			s.storage.Get(s.item) <- true
+			s.storage.GetIngredient(s.item) <- true
 		}
 	}
 }

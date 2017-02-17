@@ -35,6 +35,7 @@ const (
 	NodeTypeSupply = "SUPPLY"
 	NodeTypeStorage = "STORAGE"
 	NodeTypeCook = "COOK"
+	NodeTypeCustomer = "CUSTOMER"
 )
 
 type Node struct {
