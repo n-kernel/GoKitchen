@@ -6,7 +6,7 @@ type Storage struct {
 
 	Ingredients map[Item] chan bool
 
-	Burger chan bool
+	Meals map[Item] chan bool
 }
 
 func NewStorage() *Storage {
@@ -19,11 +19,16 @@ func NewStorage() *Storage {
 		s.Ingredients[item] = make(chan bool, 100)
 	}
 
-	s.Burger = make(chan bool, 100)
+	s.Meals = make(map[Item] chan bool)
+	s.Meals[Burger] = make(chan bool)
 
 	return &s
 }
 
-func (s Storage) Get(item Item) chan bool {
+func (s Storage) GetMeal(item Item) chan bool {
+	return s.Meals[item]
+}
+
+func (s Storage) GetIngredient(item Item) chan bool {
 	return s.Ingredients[item]
 }

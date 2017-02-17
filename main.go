@@ -14,6 +14,7 @@ import (
 var suppliers = make(map[string]*kitchen.Supply)
 var storage = kitchen.NewStorage()
 var cooks = make(map[string]*kitchen.Cook)
+var customers = make(map[string]*kitchen.Customer)
 
 func main() {
 	fmt.Println("Hello restaurant!")
@@ -47,10 +48,16 @@ func main() {
 		go cook.Start()
 	}
 
-	// Wait for burgers to be created
-	for i := 0; i < 5000; i++ {
-		//fmt.Println("Waiting for burger ", i)
-		<-storage.Burger
+	addCustomer("Harry", kitchen.Burger)
+	addCustomer("Bilbo", kitchen.Burger)
+	addCustomer("BEAKFAST", kitchen.Burger)
+
+	for _, customer := range customers {
+		go customer.Run()
+	}
+
+	for {
+		continue
 	}
 
 	for _, supply := range suppliers {
@@ -61,8 +68,8 @@ func main() {
 		go cook.Stop()
 	}
 
-	for {
-		continue
+	for _, customer := range customers {
+		go customer.Stop()
 	}
 
 	fmt.Println("Nom nom nom!")
@@ -70,6 +77,18 @@ func main() {
 
 func addSupply(name string, item kitchen.Item) {
 	suppliers[name] = kitchen.NewSupply(name, storage, item, time.Second * 3)
+}
+
+func addCustomer(name string, item kitchen.Item) {
+	customer := kitchen.NewCustomer(name, storage, item, time.Second * 10, time.Second)
+	customers[name] = customer
+
+	go func() {
+		customer.Run()
+		fmt.Println(customer.Name, " left the building saying: ", customer.ExitMessage)
+		// Not thread safe, im wild
+		delete(customers, name)
+	}()
 }
 
 func webLayout(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
@@ -89,11 +108,20 @@ func webLayout(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		counter++
 	}
 
+	customerIds := make([]string, len(customers))
+
+	counter = 0
+	for k := range customers {
+		customerIds[counter] = k
+		counter++
+	}
+
 	var f interface{}
 	f = map[string]interface{}{
 		"supply":  itemIds,
 		"storage": [] string{"storage"},
 		"cooks":   cookIds,
+		"customers":   customerIds,
 	}
 
 	json.NewEncoder(w).Encode(f)
@@ -109,6 +137,8 @@ func webAdd(w http.ResponseWriter, _ *http.Request, ps httprouter.Params) {
 	case "cooks":
 		name := util.RandStringBytesMaskImprSrc(4)
 		cooks[name] = kitchen.NewCook(name, storage, time.Second)
+	case "customers":
+		addCustomer(util.RandStringBytesMaskImprSrc(4), kitchen.Burger)
 	default:
 		http.Error(w, "Unkown row "+row, 404)
 	}
