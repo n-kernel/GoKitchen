@@ -10,9 +10,14 @@ import { Provider } from 'react-redux';
 import { Router, Route, browserHistory, IndexRoute } from 'react-router';
 import { syncHistoryWithStore, routerReducer } from 'react-router-redux';
 
+import supplyReducer from './ducks/supplies';
+import storageReducer from './ducks/storages';
+
 
 const store = createStore(
     combineReducers({
+        storages: storageReducer,
+        supplies: supplyReducer,
         routing: routerReducer,
     })
 );

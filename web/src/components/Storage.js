@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 class Storage extends Component {
     render() {
         return(
-            <div>
+            <div key={this.props.id} >
                 Storage unit
             </div>
         );
