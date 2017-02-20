@@ -1,7 +1,7 @@
 package kitchen
 
 import (
-	"github.com/Jeroenimoo/GoKitchen/util/notify"
+	"github.com/Jeroenimoo/GoKitchen/comm"
 )
 
 type Item int
@@ -14,13 +14,30 @@ const (
 	Burger
 )
 
-var Items = []Item{
+type enumItem struct {
+	Item
+	name string
+}
+
+var Items = []Item {
 	Bread,
 	Cheese,
 	Tomato,
 	Lettuce,
-
 	Burger,
+}
+
+var EnumItems = []enumItem{
+	{Bread, "BREAD"},
+	{Cheese, "CHEESE"},
+	{Tomato, "TOMATO"},
+	{Lettuce, "LETTUCE"},
+
+	{Burger, "BURGER"},
+}
+
+func (i Item) GetName() string {
+	return EnumItems[i].name
 }
 
 type Status string
@@ -43,7 +60,7 @@ type Node struct {
 	Name string
 }
 
-var NodeStatusNotify = notify.NewNotifier()
+var EventBus = comm.NewEventBus()
 
 func (s *Node) updateStatus(status Status) {
 	go func() {
@@ -53,6 +70,6 @@ func (s *Node) updateStatus(status Status) {
 			"status": status,
 		}
 
-		NodeStatusNotify.Message(data)
+		EventBus.Publish <- &comm.Event{"nodeStatus", data}
 	}()
 }

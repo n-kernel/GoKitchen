@@ -8,6 +8,7 @@ import (
 	"time"
 	"github.com/Jeroenimoo/GoKitchen/util"
 	"github.com/julienschmidt/httprouter"
+	"github.com/Jeroenimoo/GoKitchen/comm"
 )
 
 // Initializes the storage we will use
@@ -19,7 +20,7 @@ var customers = make(map[string]*kitchen.Customer)
 func main() {
 	fmt.Println("Hello restaurant!")
 
-	go kitchen.NodeStatusNotify.Run()
+	go kitchen.EventBus.Run()
 
 	router := httprouter.New()
 	router.GET("/layout", webLayout)
@@ -180,23 +181,33 @@ func webStatus(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	listener := make(chan []byte)
+	listener := make(chan *comm.Event)
 
-	kitchen.NodeStatusNotify.Joining <- listener
+	kitchen.EventBus.Joining <- listener
 
 	defer func() {
-		kitchen.NodeStatusNotify.Leaving <- listener
+		kitchen.EventBus.Leaving <- listener
 	}()
 
 	writerClose := w.(http.CloseNotifier).CloseNotify()
 
 	go func() {
 		<-writerClose
-		kitchen.NodeStatusNotify.Leaving <- listener
+		kitchen.EventBus.Leaving <- listener
 	}()
 
 	for {
-		fmt.Fprint(w, "data: ", string(<-listener), "\n\n")
+		event := <-listener
+		data := event.Data
+		jsonData, err := json.Marshal(data)
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		fmt.Fprint(w, "type:", event.Name)
+		fmt.Fprint(w, "data: ", string(jsonData), "\n\n")
 		flusher.Flush()
 	}
 }
