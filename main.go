@@ -33,14 +33,11 @@ func main() {
 
 	router.NotFound = http.FileServer(http.Dir("static"))
 
-	go http.ListenAndServe(":8080", router)
-
 	// Create suppliers
 	addSupply("Bread", kitchen.Bread)
 	addSupply("Cheese", kitchen.Cheese)
 	addSupply("Tomato", kitchen.Tomato)
 	addSupply("Lettuce", kitchen.Lettuce)
-
 
 	for _, supply := range suppliers {
 		go supply.Start()
@@ -62,23 +59,7 @@ func main() {
 		go customer.Run()
 	}
 
-	for {
-		continue
-	}
-
-	for _, supply := range suppliers {
-		go supply.Stop()
-	}
-
-	for _, cook := range cooks {
-		go cook.Stop()
-	}
-
-	for _, customer := range customers {
-		go customer.Stop()
-	}
-
-	fmt.Println("Nom nom nom!")
+	http.ListenAndServe(":8080", router)
 }
 
 func addSupply(name string, item kitchen.Item) {
@@ -209,7 +190,7 @@ func webStatus(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 
 		if err != nil {
 			fmt.Println(err)
-			continue
+			return
 		}
 
 		fmt.Fprint(w, "event: test\n")//, event.Name)
