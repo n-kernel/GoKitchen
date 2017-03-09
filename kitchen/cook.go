@@ -34,13 +34,26 @@ func (c *Cook) Stop() {
 	c.stopSignal <- true
 }
 
+func (c *Cook) grabIngredients() <-chan bool {
+	return util.Merge(c.storage.GetIngredient(Bread), c.storage.GetIngredient(Cheese), c.storage.GetIngredient(Tomato), c.storage.GetIngredient(Lettuce))
+}
+
 func (c *Cook) assembleBurger() {
-	c.updateStatus(Waiting)
 	// Wait for burger items to be available
+	grabChannel := c.grabIngredients()
 	select {
-	case <-util.Merge(c.storage.GetIngredient(Bread), c.storage.GetIngredient(Cheese), c.storage.GetIngredient(Tomato), c.storage.GetIngredient(Lettuce)):
-	case <-c.stopSignal:
-		return
+		// Check if ingredients are available already
+		case <-grabChannel:
+		// If not wait for them and update status to waiting
+		default:
+			c.updateStatusMessage(Waiting, "Missing ingredient(s)")
+
+			// Wait until items are available or until the stop signal
+			select {
+			case <-grabChannel:
+			case <-c.stopSignal:
+				return
+			}
 	}
 
 	c.updateStatus(Working)
@@ -48,7 +61,15 @@ func (c *Cook) assembleBurger() {
 	// Wait for burger preparation time
 	time.Sleep(time.Second)
 
+	select {
+	// Add burger if there is any space
+	case c.storage.GetMeal(Burger) <- true:
+	// If not update status to waiting, and wait for space
+	default:
+		c.updateStatusMessage(Waiting, "No customer!")
+		c.storage.GetMeal(Burger) <- true
+	}
+
 	c.updateStatus(Finished)
-	c.storage.GetMeal(Burger) <- true
 	fmt.Println(c.Name, " created a burger!")
 }

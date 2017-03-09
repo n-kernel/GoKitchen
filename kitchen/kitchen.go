@@ -27,6 +27,13 @@ var Items = []Item {
 	Burger,
 }
 
+var Ingredients = []Item {
+	Bread,
+	Cheese,
+	Tomato,
+	Lettuce,
+}
+
 var EnumItems = []enumItem{
 	{Bread, "BREAD"},
 	{Cheese, "CHEESE"},
@@ -63,11 +70,16 @@ type Node struct {
 var EventBus = comm.NewEventBus()
 
 func (s *Node) updateStatus(status Status) {
+	s.updateStatusMessage(status, "")
+}
+
+func (s *Node) updateStatusMessage(status Status, message string) {
 	go func() {
 		data := map[string]interface{} {
 			"type": s.Type,
 			"name": s.Name,
 			"status": status,
+			"message": message,
 		}
 
 		EventBus.Publish <- &comm.Event{"nodeStatus", data}

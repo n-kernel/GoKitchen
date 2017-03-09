@@ -9,6 +9,7 @@ import (
 	"github.com/Jeroenimoo/GoKitchen/util"
 	"github.com/julienschmidt/httprouter"
 	"github.com/Jeroenimoo/GoKitchen/comm"
+	"math/rand"
 )
 
 // Initializes the storage we will use
@@ -18,6 +19,8 @@ var cooks = make(map[string]*kitchen.Cook)
 var customers = make(map[string]*kitchen.Customer)
 
 func main() {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	fmt.Println("Hello restaurant!")
 
 	go kitchen.EventBus.Run()
@@ -27,6 +30,8 @@ func main() {
 	router.POST("/layout/:row", webAdd)
 	router.DELETE("/layout/:row/:node", webDel)
 	router.GET("/status", webStatus)
+
+	router.NotFound = http.FileServer(http.Dir("static"))
 
 	go http.ListenAndServe(":8080", router)
 
@@ -77,7 +82,8 @@ func main() {
 }
 
 func addSupply(name string, item kitchen.Item) {
-	suppliers[name] = kitchen.NewSupply(name, storage, item, time.Second * 3)
+	refill := time.Duration(float32(time.Second) * (2.0 + 2.0 * rand.Float32()))
+	suppliers[name] = kitchen.NewSupply(name, storage, item, refill)
 }
 
 func addCustomer(name string, item kitchen.Item) {
@@ -206,7 +212,7 @@ func webStatus(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 			continue
 		}
 
-		fmt.Fprint(w, "type:", event.Name)
+		fmt.Fprint(w, "event: test\n")//, event.Name)
 		fmt.Fprint(w, "data: ", string(jsonData), "\n\n")
 		flusher.Flush()
 	}

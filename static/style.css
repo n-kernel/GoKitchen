@@ -1,0 +1,49 @@
+.container {
+    width: 100%;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.row {
+    background-color: #ccc;
+    padding: 20px;
+    display: inline-block;
+    border-radius: 5px;
+    float: left;
+}
+
+.row .box {
+    background-color: #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    float: left;
+    margin: 0 20px;
+}
+
+.supply {
+    width: 80px;
+}
+
+.storage {
+    width: 500px;
+}
+
+.plussers {
+    float: right;
+}
+
+.plussers div {
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.plussers .plus {
+    background-color: green;
+}
+
+.plussers .min {
+    background-color: red;
+    margin-top: 2px;
+}
