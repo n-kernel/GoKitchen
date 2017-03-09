@@ -13,7 +13,7 @@ jQuery.fn.flash = function () {
 };
 
 //noinspection JSUnresolvedFunction
-new EventSource('http://localhost:8080/status').addEventListener('test', function(event) {
+new EventSource('/status').addEventListener('test', function(event) {
     var data = JSON.parse(event.data);
 
     var node = $("#" + data.name);
