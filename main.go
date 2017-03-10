@@ -59,6 +59,18 @@ func main() {
 		go customer.Run()
 	}
 
+	go func() {
+		time.Sleep(time.Second * 6)
+
+		for i := 0; i < 10; i++ {
+			data := map[string]interface{} {
+				"row": i,
+			}
+
+			kitchen.EventBus.Publish <- &comm.Event{"message", data}
+		}
+ 	}()
+
 	http.ListenAndServe(":8080", router)
 }
 
@@ -72,10 +84,20 @@ func addCustomer(name string, item kitchen.Item) {
 	customers[name] = customer
 
 	go func() {
+		data := map[string]interface{} {
+			"row": "customer",
+			"name": name,
+			"action": "ADD",
+		}
+
+		kitchen.EventBus.Publish <- &comm.Event{"rowUpdate", data}
+
 		customer.Run()
-		fmt.Println(customer.Name, " left the building saying: ", customer.ExitMessage)
 		// Not thread safe, im wild
 		delete(customers, name)
+
+		data["action"] = "REMOVE"
+		kitchen.EventBus.Publish <- &comm.Event{"rowUpdate", data}
 	}()
 }
 
@@ -193,7 +215,7 @@ func webStatus(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 			return
 		}
 
-		fmt.Fprint(w, "event: test\n")//, event.Name)
+		fmt.Fprint(w, "event: ", event.Name, "\n")
 		fmt.Fprint(w, "data: ", string(jsonData), "\n\n")
 		flusher.Flush()
 	}

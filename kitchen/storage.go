@@ -50,7 +50,7 @@ func NewStorage() *Storage {
 				status = Working
 			}
 
-			s.updateStatusMessage(status, message)
+			s.updateStatus(status, message)
 			time.Sleep(time.Second)
 		}
 	}()

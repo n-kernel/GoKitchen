@@ -69,19 +69,13 @@ type Node struct {
 
 var EventBus = comm.NewEventBus()
 
-func (s *Node) updateStatus(status Status) {
-	s.updateStatusMessage(status, "")
-}
+func (s *Node) updateStatus(status Status, message string) {
+	data := map[string]interface{} {
+		"type": s.Type,
+		"name": s.Name,
+		"status": status,
+		"message": message,
+	}
 
-func (s *Node) updateStatusMessage(status Status, message string) {
-	go func() {
-		data := map[string]interface{} {
-			"type": s.Type,
-			"name": s.Name,
-			"status": status,
-			"message": message,
-		}
-
-		EventBus.Publish <- &comm.Event{"nodeStatus", data}
-	}()
+	EventBus.Publish <- &comm.Event{"nodeStatus", data}
 }

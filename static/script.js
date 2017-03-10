@@ -13,29 +13,53 @@ jQuery.fn.flash = function () {
 };
 
 //noinspection JSUnresolvedFunction
-new EventSource('/status').addEventListener('test', function(event) {
-    var data = JSON.parse(event.data);
+var source = new EventSource('/status');
 
+source.addEventListener('nodeStatus', function(event) {
+    var data = JSON.parse(event.data);
     var node = $("#" + data.name);
 
-    //console.log($('.status', $("#" + data.name))[0].innerHTML);
-    $('.status', node)[0].innerHTML = data.message;
-
+    var color;
     switch(data.status) {
         case "WORKING":
-            node.css('backgroundColor', '#ffc372');
+            color = '#ffc372';
             break;
         case "WAITING":
-            node.css('backgroundColor', '#ff353d');
+            color = '#ff353d';
             break;
         case "FINISHED":
+            color = '#1eff1a';
             node.flash();
             break;
     }
+
+    node.css('backgroundColor', color);
+    $('.status', node).html(data.message);
+});
+
+source.addEventListener('rowUpdate', function(event) {
+    var data = JSON.parse(event.data);
+
+    switch(data.action) {
+        case "REMOVE":
+            setTimeout(function() {
+                $("#" + data.name).remove();
+            }, 1000);
+            break;
+        case "ADD":
+            $("#row-" + data.row).append(
+
+'<div class="box customer" id="' + data.name + '"> \
+    <h2>' + data.name + '</h2> \
+    <div class="status">Hello!</div> \
+</div>'
+
+            );
+            break;
+    }
+
 });
 
 $( "#customer-plus" ).click(function() {
-    $.post( "/layout/customers", function( data ) {
-        console.log(data);
-    });
+    $.post( "/layout/customers", function( data ) {});
 });

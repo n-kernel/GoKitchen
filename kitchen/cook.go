@@ -3,7 +3,6 @@ package kitchen
 import (
 	"time"
 	"github.com/Jeroenimoo/GoKitchen/util"
-	"fmt"
 )
 
 type Cook struct {
@@ -46,7 +45,7 @@ func (c *Cook) assembleBurger() {
 		case <-grabChannel:
 		// If not wait for them and update status to waiting
 		default:
-			c.updateStatusMessage(Waiting, "Missing ingredient(s)")
+			c.updateStatus(Waiting, "Missing ingredient(s)")
 
 			// Wait until items are available or until the stop signal
 			select {
@@ -56,7 +55,7 @@ func (c *Cook) assembleBurger() {
 			}
 	}
 
-	c.updateStatus(Working)
+	c.updateStatus(Working, "Making burger")
 
 	// Wait for burger preparation time
 	time.Sleep(time.Second)
@@ -66,10 +65,9 @@ func (c *Cook) assembleBurger() {
 	case c.storage.GetMeal(Burger) <- true:
 	// If not update status to waiting, and wait for space
 	default:
-		c.updateStatusMessage(Waiting, "No customer!")
+		c.updateStatus(Waiting, "No customer!")
 		c.storage.GetMeal(Burger) <- true
 	}
 
-	c.updateStatus(Finished)
-	fmt.Println(c.Name, " created a burger!")
+	c.updateStatus(Finished, "Served burger")
 }

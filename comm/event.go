@@ -19,7 +19,7 @@ type EventBus struct {
 }
 
 func NewEventBus() *EventBus {
-	publish := make(chan *Event)
+	publish := make(chan *Event, 100)
 
 	joining := make(chan chan *Event)
 	leaving := make(chan chan *Event)

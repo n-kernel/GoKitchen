@@ -20,7 +20,7 @@ func NewSupply(name string, storage *Storage, item Item, delay time.Duration) *S
 
 func (s *Supply) Start() {
 	for {
-		s.updateStatus(Working)
+		s.updateStatus(Working, "Creating supply")
 		// Wait for work delay to complete or stop if signaled to
 		select {
 		case <-time.After(s.Delay):
@@ -33,7 +33,7 @@ func (s *Supply) Start() {
 		case s.storage.GetIngredient(s.item) <- true:
 		// Else update status and wait for space or stop signal
 		default:
-			s.updateStatusMessage(Waiting, "Storage full")
+			s.updateStatus(Waiting, "Storage full")
 
 			// Wait for space to add ingredient or until the stop signal
 			select {
@@ -42,7 +42,8 @@ func (s *Supply) Start() {
 				return
 			}
 		}
-		s.updateStatus(Finished)
+
+		s.updateStatus(Finished, "Created supply")
 	}
 }
 
