@@ -19,3 +19,6 @@ A live version is running at https://gokitchen.haterd.net (Click on the '+' in t
 
 ## Misc
 I've used Server Sent Events (SSE) to trigger live updates on the client.
+
+## Credits
+Also a little shoutout to [@YungTosti](https://github.com/YungTosti) for providing me with some basic HTML to start the frontend with.
